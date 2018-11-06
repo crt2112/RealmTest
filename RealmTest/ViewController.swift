@@ -55,7 +55,12 @@ class ViewController: UIViewController {
         // age で昇順ソート
         results = results.sorted(byKeyPath: "age", ascending: true)
         print("results sorted: \(results)")
-
+        // 1件レコード追加
+        try! realm.write {
+            realm.add([Person(value: ["name": "D", "age": 15])])
+        }
+        // そのままソートに反映されているか確認
+        print("results sorted added: \(results)")
     }
 }
 
