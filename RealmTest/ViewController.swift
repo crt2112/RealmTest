@@ -110,6 +110,11 @@ class ViewController: UIViewController {
         print("後方一致 ka: \(realm.objects(Person.self).filter("name ENDSWITH'ka'"))")
         // nama が *d*D?i* にパターンマッチ    ?は任意の1文字 *は任意の0文字以上
         print("パターンマッチ *d*D?i*: \(realm.objects(Person.self).filter("name LIKE'*d*D?i*'"))")
+        // 大文字小文字の区別
+        // 区別する
+        print("大文字小文字で区別 前方一致 y: \(realm.objects(Person.self).filter("name BEGINSWITH 'y'"))")
+        // 区別しばい
+        print("大文字小文字で区別しない 前方一致 y: \(realm.objects(Person.self).filter("name BEGINSWITH[c] 'y'"))")
     }
 }
 
