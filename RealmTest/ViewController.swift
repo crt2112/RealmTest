@@ -23,7 +23,8 @@ class ViewController: UIViewController {
         //queryTest()
         //queryTest2()
         //autoUpdateTest()
-        likingObjectAutoUpdateTest()
+        //likingObjectAutoUpdateTest()
+        autoUpdateLoopObjectTest()
     }
     
     // プライマリーキーでモデルオブジェクトを取得
@@ -249,5 +250,37 @@ class ViewController: UIViewController {
         
     }
     
+    // 自動更新の例外テスト。 for-in ループで列挙されるオブジェクトに自動更新に影響されず、ループ開始時のおぶジェクトが列挙される
+    private func autoUpdateLoopObjectTest() {
+        let realm = try! Realm()
+        let results = realm.objects(Cat.self).filter("age == 10")
+        try! realm.write {
+            realm.add([Cat(value: ["name": "cat1", "age": 10]),
+                       Cat(value: ["name": "cat2", "age": 10]),
+                       Cat(value: ["name": "cat3", "age": 10]),
+                       Cat(value: ["name": "cat4", "age": 10]),
+                       Cat(value: ["name": "cat5", "age": 10]),
+                       ])
+        }
+        
+        print("results.count: \(results.count)") // 5
+        
+        try! realm.write {
+            // for-in で results 内の要素を変更する
+            for cat in results {
+                print("for-in cat.name: \(cat.name)")
+                // 列挙してる cat の age を変更
+                cat.age += 1
+                
+                // cat.age がb 11 に変更されたので results は自動更新される
+                // results にアクセスすると cat が取り除かれているが、for-in 開始時の Cat はすべて列挙される
+                print("for-in results.count: \(results.count)") // 4,3,2,1,0
+            }
+        }
+        
+        // すべての cat.age が変更されたので results は 0
+        print("results.count: \(results.count)")
+
+    }
 }
 
