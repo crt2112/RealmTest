@@ -22,7 +22,8 @@ class ViewController: UIViewController {
         //sortTest()
         //queryTest()
         //queryTest2()
-        autoUpdateTest()
+        //autoUpdateTest()
+        likingObjectAutoUpdateTest()
     }
     
     // プライマリーキーでモデルオブジェクトを取得
@@ -211,5 +212,42 @@ class ViewController: UIViewController {
         print("updated object.value: \(object.value)")
         print("updated fetchedObject.value: \(fetchedObject.value)")
     }
+    
+    // 1:1 の逆方向の関連と自動更新の確認
+    private func likingObjectAutoUpdateTest() {
+        let realm = try! Realm()
+        let person1 = Person(value: ["name": "Taro", "age": 32])
+        let person2 = Person(value: ["name": "Jiro", "age": 30])
+        let dog = Dog(value: ["name": "Momo", "age": 9])
+        
+        try! realm.write {
+            realm.add(person1) // person1 はマネージオブジェクトになる
+            realm.add(person2) // person2 はマネージオブジェクトになる
+            realm.add(dog) // dog はマネージオブジェクトになる
+        }
+        
+        // この時点で dog はどことも関連がない
+        print("dog.persons.count: \(dog.persons.count)") // 0
+        // person と dog を関連づける
+        try! realm.write {
+            person1.dog = dog
+            person2.dog = dog
+        }
+        
+        // dog の逆方向関連が自動更新されている
+        print("dog.persons.count: \(dog.persons.count)")
+        print("dog.persons: \(dog.persons)")
+        
+        // dog を削除
+        try! realm.write {
+            realm.delete(dog)
+        }
+        
+        // dog 削除の自動更新確認
+        print("person1.dog: \(String(describing: person1.dog))")
+        print("person2.dog: \(String(describing: person2.dog))")
+        
+    }
+    
 }
 
