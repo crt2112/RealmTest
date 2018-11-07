@@ -20,7 +20,8 @@ class ViewController: UIViewController {
     @IBAction func onButtonTouchUp(_ sender: Any) {
         //primaryKeyTest()
         //sortTest()
-        queryTest()
+        //queryTest()
+        queryTest2()
     }
     
     // プライマリーキーでモデルオブジェクトを取得
@@ -39,7 +40,7 @@ class ViewController: UIViewController {
         
     }
     
-    // ソートしてみる
+    // ソートのテスト
     private func sortTest() {
         let realm = try! Realm()
         // age が異なる複数のPersonモデルを追加
@@ -113,8 +114,66 @@ class ViewController: UIViewController {
         // 大文字小文字の区別
         // 区別する
         print("大文字小文字で区別 前方一致 y: \(realm.objects(Person.self).filter("name BEGINSWITH 'y'"))")
-        // 区別しばい
+        // 区別しない
         print("大文字小文字で区別しない 前方一致 y: \(realm.objects(Person.self).filter("name BEGINSWITH[c] 'y'"))")
+    }
+    
+    // クエリのテスト その２
+    private func queryTest2() {
+        let realm = try! Realm()
+        let cat1 = Cat(value: ["name": "cat1", "age": 3])
+        let cat2 = Cat(value: ["name": "cat2", "age": 5])
+        let cat3 = Cat(value: ["name": "cat3", "age": 10])
+        let cat4 = Cat(value: ["name": "cat4", "age": 15])
+        let cat5 = Cat(value: ["name": "cat5", "age": 20])
+
+        try! realm.write {
+            realm.deleteAll() // テストなので一旦全削除
+            realm.add([Person(value: ["name": "A", "age": 10, "cats": [cat1]]),
+                       Person(value: ["name": "B", "age": 20, "cats": [cat1, cat2]]),
+                       Person(value: ["name": "C", "age": 30, "cats": [cat1, cat2, cat3]]),
+                       Person(value: ["name": "D", "age": 30, "cats": [cat1, cat2, cat3, cat4]]),
+                       Person(value: ["name": "E", "age": 30, "cats": [cat1, cat3, cat4, cat5]]),
+                       ])
+        }
+        
+        let results = realm.objects(Person.self)
+        
+        // ANY(いずれかの要素が条件と一致する)
+        // person.cats 内のがいずれかの cats.age が 10 と一致する Person モデル
+        var query = results.filter("ANY cats.age == 10")
+        print("ANY cats.age == 10: \(query)")
+        
+        // NONE(すべての要素が条件と一致しない)
+        // person.cats内のすべてのcats.ageが5と一致しないpersonモデル
+        query = results.filter("NONE cats.age == 5")
+        print("NONE cats.age == 5: \(query)")
+
+        // IN(いずれかの条件と一致する)
+        query = results.filter("age IN {10, 20}")
+        print("age IN {10, 20}: \(query)")
+        
+        // 集計
+        // @count
+        query = results.filter("cats.@count == 3") // catsの要素数が3
+        print("cats.@count == 3: \(query)")
+        
+        // @avg ageの平均値
+        let avgAge = results.value(forKeyPath: "@avg.age")
+        print("@avg.age: \(String(describing: avgAge))")
+
+        // @min
+        let minAge = results.value(forKeyPath: "@min.age")
+        print("@min.age: \(String(describing: minAge))")
+        
+        // @max
+        let maxAge = results.value(forKeyPath: "@max.age")
+        print("@max.age: \(String(describing: maxAge))")
+        
+        // @sum
+        let sumAge = results.value(forKeyPath: "@sum.age")
+        print("@sum.age: \(String(describing: sumAge))")
+
     }
 }
 
