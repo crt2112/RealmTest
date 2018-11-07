@@ -21,7 +21,8 @@ class ViewController: UIViewController {
         //primaryKeyTest()
         //sortTest()
         //queryTest()
-        queryTest2()
+        //queryTest2()
+        autoUpdateTest()
     }
     
     // プライマリーキーでモデルオブジェクトを取得
@@ -174,6 +175,41 @@ class ViewController: UIViewController {
         let sumAge = results.value(forKeyPath: "@sum.age")
         print("@sum.age: \(String(describing: sumAge))")
 
+    }
+    
+    // マネージドオブジェクトの自動更新テスト
+    private func autoUpdateTest() {
+        let realm = try! Realm()
+        
+        //var config = Realm.Configuration
+        //config.deleteRealmIfMigrationNeeded = true
+        //let realm = try! Realm(configuration: config)
+        
+        let id = 1
+        let object = UniqueObject(value: ["id": id, "value": "abc"])
+        
+        try! realm.write {
+            realm.deleteAll() // テストなので一旦全削除
+            realm.add(object) // ここで object はマネージドオブジェクトになる
+        }
+        
+        // DB から id=1 の UniqueObject を取得
+        let fetchedObject = realm.object(ofType: UniqueObject.self, forPrimaryKey: id)!
+        
+        // object と fetchedObject は別インスタンスだが同じデータベースのオブジェクトと参照している
+        print("object.value: \(object.value)")
+        print("fetchedObject.value: \(fetchedObject.value)")
+
+        // value を xyz に更新
+        try! realm.write {
+            realm.create(UniqueObject.self,
+                         value: ["id": id, "value": "xyz"],
+                         update: true)
+        }
+        
+        // value を確認
+        print("updated object.value: \(object.value)")
+        print("updated fetchedObject.value: \(fetchedObject.value)")
     }
 }
 

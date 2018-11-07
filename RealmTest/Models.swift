@@ -15,16 +15,18 @@ class Animal: Object {
 }
 
 class Dog: Animal {
-    
+    // Person への逆方向の関連
+    let persons = LinkingObjects(fromType: Person.self, property: "dog")
 }
 
 class  Cat: Animal {
-    
+    let persons = LinkingObjects(fromType: Person.self, property: "cats")
 }
 
 
 class UniqueObject: Object {
     @objc dynamic var id = 0
+    @objc dynamic var value = ""
     // プライマリーキー指定
     override class func primaryKey() -> String? {
         return "id"
