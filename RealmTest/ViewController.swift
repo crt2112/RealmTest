@@ -281,6 +281,7 @@ class ViewController: UIViewController {
         // すべての cat.age が変更されたので results は 0
         print("results.count: \(results.count)")
 
+        //test comment
     }
 }
 
